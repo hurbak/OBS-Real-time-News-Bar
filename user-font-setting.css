@@ -1,0 +1,42 @@
+/* Distributed from: https://github.com/hurbak/OBS-Real-time-News-Bar */
+
+/* ==========================================================================
+   Custom Font Definitions (@font-face)
+   ========================================================================== */
+/* Define BreakingNews1 font with different weights using @font-face */
+@font-face {
+    font-family: "BreakingNews1";
+    font-weight: 300;
+    font-style: normal;
+    src: url("https://cdn.jsdelivr.net/gh/wefonts/esaManru/esaManru-Light.eot");
+    src: url("https://cdn.jsdelivr.net/gh/wefonts/esaManru/esaManru-Light.eot?#iefix") format("embedded-opentype"),
+         url("https://cdn.jsdelivr.net/gh/wefonts/esaManru/esaManru-Light.woff2") format("woff2"),
+         url("https://cdn.jsdelivr.net/gh/wefonts/esaManru/esaManru-Light.woff") format("woff"),
+         url("https://cdn.jsdelivr.net/gh/wefonts/esaManru/esaManru-Light.ttf") format("truetype");
+    font-display: swap;
+}
+@font-face {
+    font-family: "BreakingNews1";
+    font-weight: 500;
+    font-style: normal;
+    src: url("https://cdn.jsdelivr.net/gh/wefonts/esaManru/esaManru-Medium.eot");
+    src: url("https://cdn.jsdelivr.net/gh/wefonts/esaManru/esaManru-Medium.eot?#iefix") format("embedded-opentype"),
+         url("https://cdn.jsdelivr.net/gh/wefonts/esaManru/esaManru-Medium.woff2") format("woff2"),
+         url("https://cdn.jsdelivr.net/gh/wefonts/esaManru/esaManru-Medium.woff") format("woff"),
+         url("https://cdn.jsdelivr.net/gh/wefonts/esaManru/esaManru-Medium.ttf") format("truetype");
+    font-display: swap;
+}
+@font-face {
+    font-family: "BreakingNews1";
+    font-weight: 700;
+    font-style: normal;
+    src: url("https://cdn.jsdelivr.net/gh/wefonts/esaManru/esaManru-Bold.eot");
+    src: url("https://cdn.jsdelivr.net/gh/wefonts/esaManru/esaManru-Bold.eot?#iefix") format("embedded-opentype"),
+         url("https://cdn.jsdelivr.net/gh/wefonts/esaManru/esaManru-Bold.woff2") format("woff2"),
+         url("https://cdn.jsdelivr.net/gh/wefonts/esaManru/esaManru-Bold.woff") format("woff"),
+         url("https://cdn.jsdelivr.net/gh/wefonts/esaManru/esaManru-Bold.ttf") format("truetype");
+    font-display: swap;
+}
+
+/* If you want to add BreakingNews2, etc., add the @font-face rules here. */
+

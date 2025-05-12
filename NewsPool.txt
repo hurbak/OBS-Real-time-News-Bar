@@ -1,0 +1,8 @@
+1 News sample. First breaking news.
+2 Second breaking news.
+3 Third breaking news.
+4 Comments start with #.
+#This is a comment.
+Repeat from the first line to the last line.
+Be careful, as long sentences can cause errors. Errors like this one.
+Saving this file will reread all the news before showing the first news.

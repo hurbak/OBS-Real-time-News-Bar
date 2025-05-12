@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Breaking News</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="user-font-setting.css">
+    <link rel="stylesheet" href="user-variables-setting.css">
+  <!--
+# -----------------------------------------------------------------------------
+# Project: OBS Real-time News Bar
+# Author: hurbak
+# Version: 0.4
+# Date: [Current Date, e.g., 2025-05-13]
+# Description: This script/module handles the real-time updating
+#              and display of a news ticker within OBS Studio.
+# -----------------------------------------------------------------------------
+-->
+    <style>
+        body {
+            background: none;
+            position: fixed;
+            left: var(--lower-third-offset-left);
+            top: var(--lower-third-offset-top);
+            width: var(--lower-third-width);
+            height: var(--lower-third-height);
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            gap: var(--lower-third-spacing);
+        }
+
+        #canvasBackground {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--canvas-gradient);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        #datetime {
+            font-family: var(--datetime-font-family);
+            font-size: var(--datetime-font-size);
+            color: var(--datetime-color);
+            white-space: nowrap;
+            padding-top: var(--datetime-padding-top);
+            padding-right: var(--datetime-padding-right);
+            padding-bottom: var(--datetime-padding-bottom);
+            padding-left: var(--datetime-padding-left);
+            border-radius: var(--datetime-border-radius);
+            background-color: var(--datetime-bg-color);
+            display: flex;
+            align-items: center;
+            height: 100%;
+            box-sizing: border-box;
+            margin: 0;
+            order: 0;
+            flex-shrink: 0;
+            flex-grow: 0;
+            font-weight: var(--datetime-font-weight);
+            min-width: min-content;
+        }
+
+        #date {
+            margin-right: 10px;
+        }
+
+        #time {
+            margin-left: 10px;
+        }
+
+        #newsTextContainer {
+             flex-grow: 1;
+             overflow: hidden;
+             border-radius: var(--news-container-border-radius);
+             background-color: var(--news-container-bg-color);
+             display: flex;
+             align-items: center;
+             height: 100%;
+             box-sizing: border-box;
+             padding-top: var(--news-container-padding-top);
+             padding-right: var(--news-container-padding-right);
+             padding-bottom: var(--news-container-padding-bottom);
+             padding-left: var(--news-container-padding-left);
+             margin: 0;
+             order: 0;
+             position: relative;
+             flex-shrink: 1;
+        }
+
+        #newsHeader {
+            font-family: var(--news-header-font-family);
+            font-size: var(--news-header-font-size);
+            color: var(--news-header-color);
+            background-color: var(--news-header-bg-color);
+            padding-top: var(--news-header-padding-top);
+            padding-right: var(--news-header-padding-right);
+            padding-bottom: var(--news-header-padding-bottom);
+            padding-left: var(--news-header-padding-left);
+            border-radius: var(--news-header-border-radius);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            height: 100%;
+            box-sizing: border-box;
+            margin: 0;
+            order: 0;
+            flex-shrink: 0;
+            flex-grow: 0;
+            font-weight: var(--news-header-font-weight);
+            min-width: min-content;
+        }
+
+        #newsText {
+            font-family: var(--news-font-family);
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity calc(var(--news-animation-duration) * 1ms) ease-out,
+                        transform calc(var(--news-animation-duration) * 1ms) ease-out;
+            transform-origin: center bottom;
+            display: inline-block;
+            position: relative;
+            top: 0;
+            left: 0;
+            font-size: var(--news-font-size);
+            font-weight: var(--news-font-weight);
+            color: var(--news-color);
+        }
+
+        .news-initial-state {
+            opacity: 0 !important;
+            transform: translateY(100%) !important;
+            transition: none !important;
+        }
+
+        .news-hide-instantly {
+            opacity: 0 !important;
+            transition: none !important;
+        }
+    </style>
+    </head>
+<body>
+    <div id="canvasBackground"></div>
+
+    <div id="datetime">
+        <span id="date"></span>
+        <span id="time"></span>
+    </div>
+    <div id="newsHeader"></div>
+    <div id="newsTextContainer">
+        <div id="newsText"></div>
+    </div>
+
+    <script>
+        let dateElement;
+        let timeElement;
+        let newsHeaderElement;
+        let newsTextContainerElement;
+        let newsTextElement;
+        let bodyElement;
+        let datetimeElement;
+
+        let newsLines = [];
+        let currentNewsIndex = 0;
+        let displayDuration;
+        let cycleEndDelay;
+        let newsAnimationDuration;
+
+        let lastModified = null;
+        const newsFile = 'NewsPool.txt';
+        let newsDisplayTimeoutId;
+
+        let clockInterval;
+
+        function updateDateTime() {
+            const now = new Date();
+            const month = now.getMonth() + 1;
+            const day = now.getDate();
+            const weekday = new Intl.DateTimeFormat(undefined, { weekday: 'short' }).format(now);
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = now.getSeconds();
+            const blink = seconds % 2 === 0 ? ':' : ' ';
+
+            const computedRootStyle = getComputedStyle(document.documentElement);
+
+            const showDate = computedRootStyle.getPropertyValue('--show-date').trim().toUpperCase() === 'Y';
+            const showClockTime = computedRootStyle.getPropertyValue('--show-clock').trim().toUpperCase() === 'Y';
+
+            if (showDate) {
+                dateElement.textContent = `${month}/${day}(${weekday})`;
+                dateElement.style.display = 'inline';
+            } else {
+                dateElement.style.display = 'none';
+            }
+
+            if (showClockTime) {
+                timeElement.textContent = `${hours}${blink}${minutes}`;
+                timeElement.style.display = 'inline';
+            } else {
+                timeElement.style.display = 'none';
+            }
+
+            if(showDate || showClockTime) {
+                datetimeElement.style.display = 'flex';
+            } else {
+                datetimeElement.style.display = 'none';
+            }
+
+            adjustLayoutOrder();
+        }
+
+        function adjustLayoutOrder() {
+            const computedRootStyle = getComputedStyle(document.documentElement);
+
+            const showClockOverall = computedRootStyle.getPropertyValue('--show-clock').trim().toUpperCase() === 'Y' ||
+                                     computedRootStyle.getPropertyValue('--show-date').trim().toUpperCase() === 'Y';
+            const datetimePositionValue = computedRootStyle.getPropertyValue('--datetime-position').trim().toUpperCase();
+            const showNewsHeader = computedRootStyle.getPropertyValue('--show-news-header').trim().toUpperCase() === 'Y';
+            const newsHeaderSymbol = computedRootStyle.getPropertyValue('--news-header-symbol').trim().replace(/"/g, '');
+
+            if (showNewsHeader) {
+                newsHeaderElement.style.display = 'flex';
+                newsHeaderElement.textContent = newsHeaderSymbol;
+            } else {
+                newsHeaderElement.style.display = 'none';
+                newsHeaderElement.textContent = '';
+            }
+
+            if (datetimePositionValue === 'L') {
+                datetimeElement.style.order = -1;
+                newsHeaderElement.style.order = 0;
+                newsTextContainerElement.style.order = 1;
+            } else {
+                newsHeaderElement.style.order = -1;
+                newsTextContainerElement.style.order = 0;
+                datetimeElement.style.order = 1;
+            }
+
+            if (!showClockOverall) {
+                 datetimeElement.style.display = 'none';
+            } else {
+                 datetimeElement.style.display = 'flex';
+            }
+        }
+
+        let transitionListenerAdded = false;
+
+        function handleHideTransitionEnd() {
+            newsTextElement.classList.remove('news-hide-instantly');
+            newsTextElement.classList.add('news-initial-state');
+            newsTextElement.removeEventListener('transitionend', handleHideTransitionEnd);
+            transitionListenerAdded = false;
+            prepareAndShowNextNews();
+        }
+
+        function stopAndHideCurrentNews() {
+            clearTimeout(newsDisplayTimeoutId);
+            newsTextElement.classList.add('news-hide-instantly');
+
+            setTimeout(() => {
+                 newsTextElement.textContent = '';
+                 if (!transitionListenerAdded) {
+                     newsTextElement.addEventListener('transitionend', handleHideTransitionEnd);
+                     transitionListenerAdded = true;
+                 }
+                 setTimeout(() => {
+                     newsTextElement.classList.remove('news-hide-instantly');
+                 }, 10);
+            }, 50);
+        }
+
+        function prepareAndShowNextNews() {
+             if (newsLines.length === 0) {
+                 newsDisplayTimeoutId = setTimeout(checkFileChanges, displayDuration + cycleEndDelay);
+                 return;
+             }
+
+             const nextIndex = currentNewsIndex % newsLines.length;
+             newsTextElement.textContent = newsLines[nextIndex];
+
+             setTimeout(() => {
+                  newsTextElement.classList.remove('news-initial-state');
+             }, 50);
+
+             currentNewsIndex++;
+
+             if (currentNewsIndex % newsLines.length === 0) {
+                 newsDisplayTimeoutId = setTimeout(checkFileChanges, newsAnimationDuration + displayDuration + cycleEndDelay);
+             } else {
+                 newsDisplayTimeoutId = setTimeout(showNextNewsItem, newsAnimationDuration + displayDuration);
+             }
+        }
+
+        function startNewsCycle() {
+             clearTimeout(newsDisplayTimeoutId);
+
+             if (newsLines.length === 0) {
+                 newsTextElement.textContent = '';
+                 currentNewsIndex = 0;
+                 newsDisplayTimeoutId = setTimeout(checkFileChanges, displayDuration + cycleEndDelay);
+                 return;
+             }
+
+             newsTextElement.textContent = newsLines[0];
+             newsTextElement.classList.remove('news-hide-instantly');
+             newsTextElement.classList.add('news-initial-state');
+
+             setTimeout(() => {
+                 newsTextElement.classList.remove('news-initial-state');
+             }, 50);
+
+             currentNewsIndex = 1;
+
+             if (newsLines.length > 1) {
+                 newsDisplayTimeoutId = setTimeout(showNextNewsItem, newsAnimationDuration + displayDuration);
+             } else {
+                 newsDisplayTimeoutId = setTimeout(checkFileChanges, newsAnimationDuration + displayDuration + cycleEndDelay);
+             }
+        }
+
+        function showNextNewsItem() {
+             if (newsLines.length === 0) {
+                 stopAndHideCurrentNews();
+                 return;
+             }
+             stopAndHideCurrentNews();
+        }
+
+        async function loadNews() {
+            try {
+                const response = await fetch(newsFile, { cache: 'no-store' });
+                if (!response.ok) {
+                    const message = `Failed to load '${newsFile}': ${response.status} ${response.statusText}`;
+                    console.error(message);
+                    newsLines = [];
+                    if (response.status === 404) {
+                         lastModified = null;
+                    }
+                    startNewsCycle();
+                    return;
+                }
+
+                const text = await response.text();
+                const newNewsLines = text.split('\n')
+                                         .filter(line => line.trim() !== '' && !line.trim().startsWith('#'));
+
+                if (JSON.stringify(newNewsLines) !== JSON.stringify(newsLines) || newsLines.length === 0) {
+                    newsLines = newNewsLines;
+                    currentNewsIndex = 0;
+                    startNewsCycle();
+                } else {
+                    currentNewsIndex = 0;
+                    startNewsCycle();
+                }
+
+            } catch (error) {
+                const message = `Error loading news file: ${error.message}`;
+                console.error(message);
+                newsLines = [];
+                currentNewsIndex = 0;
+                startNewsCycle();
+            }
+        }
+
+        async function checkFileChanges() {
+            try {
+                 const response = await fetch(newsFile, { method: 'HEAD', cache: 'no-store' });
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        if (lastModified !== null || newsLines.length > 0) {
+                            lastModified = null;
+                            newsLines = [];
+                        }
+                         currentNewsIndex = 0;
+                         startNewsCycle();
+                    } else {
+                        console.error(`Failed to check file info: ${response.status} ${response.statusText}`);
+                         currentNewsIndex = 0;
+                         startNewsCycle();
+                    }
+                } else {
+                    const newLastModified = response.headers.get('Last-Modified');
+
+                    if (lastModified === null || (newLastModified && newLastModified !== lastModified)) {
+                        lastModified = newLastModified;
+                        await loadNews();
+                    } else {
+                         currentNewsIndex = 0;
+                         startNewsCycle();
+                    }
+                }
+            } catch (error) {
+                console.error(`Error checking for file changes: ${error.message}`);
+                 currentNewsIndex = 0;
+                 startNewsCycle();
+            }
+        }
+
+        window.onload = () => {
+            dateElement = document.getElementById('date');
+            timeElement = document.getElementById('time');
+            newsHeaderElement = document.getElementById('newsHeader');
+            newsTextContainerElement = document.getElementById('newsTextContainer');
+            newsTextElement = document.getElementById('newsText');
+            bodyElement = document.body;
+            datetimeElement = document.getElementById('datetime');
+
+            if (!datetimeElement || !newsHeaderElement || !newsTextContainerElement || !newsTextElement) {
+                 const missingElement = !datetimeElement ? '#datetime' :
+                                        !newsHeaderElement ? '#newsHeader' :
+                                        !newsTextContainerElement ? '#newsTextContainer' :
+                                        !newsTextElement ? '#newsText' : 'unknown';
+                 console.error(`Required element not found: ${missingElement}.`);
+            }
+
+            const computedStyle = getComputedStyle(bodyElement);
+            const lowerThirdWidth = parseFloat(computedStyle.width);
+            const lowerThirdHeight = parseFloat(computedStyle.height);
+
+            if (isNaN(lowerThirdWidth) || isNaN(lowerThirdHeight) || lowerThirdWidth <= 0 || lowerThirdHeight <= 0) {
+                const errorMessageText = `Invalid Lower third width (${lowerThirdWidth}px) or height (${lowerThirdHeight}px). Check CSS variables or body size settings.`;
+                console.error(errorMessageText);
+            }
+
+            updateDateTime();
+            clockInterval = setInterval(updateDateTime, 1000);
+
+            const computedRootStyle = getComputedStyle(document.documentElement);
+            cycleEndDelay = parseFloat(computedRootStyle.getPropertyValue('--cycle-end-delay'));
+            newsAnimationDuration = parseFloat(computedRootStyle.getPropertyValue('--news-animation-duration'));
+            displayDuration = parseFloat(computedRootStyle.getPropertyValue('--news-display-duration'));
+
+            loadNews();
+
+            window.addEventListener('resize', adjustLayoutOrder);
+            adjustLayoutOrder();
+        };
+
+        window.onbeforeunload = () => {
+            if (clockInterval) {
+                clearInterval(clockInterval);
+            }
+            clearTimeout(newsDisplayTimeoutId);
+        };
+    </script>
+</body>
+</html>

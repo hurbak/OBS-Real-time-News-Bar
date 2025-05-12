@@ -1,0 +1,118 @@
+/* Distributed from: https://github.com/hurbak/OBS-Real-time-News-Bar */
+
+:root {
+    /* ==========================================================================
+       1. General Layout Settings (Canvas & Lower Third Bar)
+       ========================================================================== */
+    /* Reference dimensions for the overall canvas/output area */
+    --canvas-width: 1920px;
+    --canvas-height: 1080px;
+
+    /* Define the three base colors for the canvas gradient */
+    --gradient-color-0: 0, 0, 0;  /* RGB values for Color 1 (e.g., dark blue) */
+    --gradient-color-1: 0, 0, 0;
+    --gradient-color-2: 0, 0, 0;
+
+    /* Overall background gradient for the entire canvas */
+    --canvas-gradient: linear-gradient
+    	(to bottom,
+    rgba(var(--gradient-color-0), 0) 0%,
+    rgba(var(--gradient-color-1), 0) 80%,
+    rgba(var(--gradient-color-2), 1) 100%
+    );
+
+    /* Offset from the canvas edges for the lower third bar */
+    --lower-third-offset-top: 990px;
+    --lower-third-offset-bottom: 10px;
+    --lower-third-offset-left: 10px;
+    --lower-third-offset-right: 10px;
+
+    /* Calculated dimensions for the lower third bar */
+    --lower-third-width: calc(var(--canvas-width) - var(--lower-third-offset-left) - var(--lower-third-offset-right));
+    --lower-third-height: calc(var(--canvas-height) - var(--lower-third-offset-top) - var(--lower-third-offset-bottom)); /* Calculated height */
+
+    /* Spacing between datetime, header, and news sections within the lower third */
+    --lower-third-spacing: 5px;
+
+    /* ==========================================================================
+       2. News Settings
+       ========================================================================== */
+
+    /* News Header/Prefix */
+    --show-news-header: Y; /* Y or N */
+    --news-header-symbol: "Flash News"; /* Text or symbol for the header */
+    --news-header-bg-color: rgba(228, 0, 117, 1); /* Background color for the header */
+
+    /* News Header Padding - 4 directions */
+    --news-header-padding-top: 0px;
+    --news-header-padding-right: 10px;
+    --news-header-padding-bottom: 0px;
+    --news-header-padding-left: 10px;
+
+    --news-header-border-radius: 0px;
+
+    /* News Text */
+    /* Background color for the news text container */
+    --news-container-bg-color: rgba(0, 0, 0, 0.7);
+
+    /* Base padding for news text container */
+    --news-container-padding-top: 10px;
+    --news-container-padding-bottom: 10px;
+    --news-container-padding-left: 20px;
+    --news-container-padding-right: 20px;
+
+    --news-container-border-radius: 0px;
+
+    /* ==========================================================================
+       3. Datetime (Clock/Date) Settings
+       ========================================================================== */
+    --show-clock: Y; /* Y or N */
+    --show-date: Y;  /* Y or N */
+
+    --datetime-position: R; /* L or R */
+    --datetime-bg-color: rgba(50, 50, 150, 0.8); /* Semi-transparent blue */
+
+    /* Datetime (Clock/Date) Padding */
+    --datetime-padding-top: 0px;
+    --datetime-padding-right: 20px;
+    --datetime-padding-bottom: 0px;
+    --datetime-padding-left: 20px;
+
+    --datetime-border-radius: 5px;
+
+    /* ==========================================================================
+       4. Animation & Timing Settings
+       ========================================================================== */
+    /* Duration for the news appearance animation and CSS transition (ms) */
+    --news-animation-duration: 800; /* Example: 800 for 0.8 seconds */
+
+    /* Duration each news item is displayed (ms) */
+    --news-display-duration: 10000; /* Example: 10000 for 10 seconds */
+
+    /* Delay after the last news item before the cycle restarts (ms) */
+    --cycle-end-delay: 3000; /* Example: 3000 for 3 seconds */
+
+    /* ==========================================================================
+       5. Font Settings Variables
+       ========================================================================== */
+    /* Define which font family to use from BreakingNews-font-setting.css */
+    --global-font-family: 'BreakingNews1', sans-serif; /* Default font family */
+
+    /* News Header Font Settings */
+    --news-header-font-size: 45px;
+    --news-header-font-family: var(--global-font-family); /* Use global font or override */
+    --news-header-font-weight: 300;
+    --news-header-color: white; /* Text color for the header */
+
+    /* News Text Font Settings */
+    --news-font-size: 50px;
+    --news-font-family: var(--global-font-family); /* Use global font or override */
+    --news-font-weight: 700;
+    --news-color: white; /* Text color for the news */
+
+    /* Datetime Font Settings */
+    --datetime-font-size: 45px;
+    --datetime-font-family: var(--global-font-family); /* Use global font or override */
+    --datetime-font-weight: 500;
+    --datetime-color: white; /* Text color for the datetime */
+}
