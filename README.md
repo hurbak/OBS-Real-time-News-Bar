@@ -99,7 +99,6 @@ This file provides a variety of CSS variables that allow you to precisely contro
 * `--news-animation-type`: Selects how news items appear.
     * `1`: Fade-in and Slide-up (original animation)
     * `2`: Text Horizontal Reveal effect
-    * `3`: (If implemented) Continuous scroll of all news items combined.
 * `--news-animation-duration`: The duration (in milliseconds, ms) of the news item appearance animation and CSS transition.
 * `--news-display-duration`: The time (in milliseconds, ms) each news item is displayed on the screen. (May not be used directly for Type 3 continuous scroll).
 * `--cycle-end-delay`: The delay (in milliseconds, ms) after cycling through all news items before the next cycle restarts. (May be used for file change check interval in Type 3 continuous scroll).
@@ -237,7 +236,6 @@ This updated README should help users of the OBS Real-time News Bar v0.41 unders
 * `--news-animation-type`: 뉴스 항목이 나타나는 방식을 선택합니다.
     * `1`: 페이드인 및 슬라이드업
     * `2`: 텍스트 가로 Reveal 효과
-    * `3`: (만약 구현했다면) 모든 뉴스 항목을 합쳐서 연속 스크롤
 * `--news-animation-duration`: 뉴스 항목이 나타나는 애니메이션 및 CSS 트랜지션의 지속 시간 (밀리초, ms)입니다.
 * `--news-display-duration`: 각 뉴스 항목이 화면에 표시되는 시간 (밀리초, ms)입니다. (Type 3 연속 스크롤 시에는 직접 사용되지 않을 수 있습니다.)
 * `--cycle-end-delay`: 모든 뉴스 항목을 한 번 순환한 후 다음 사이클을 시작하기 전의 대기 시간 (밀리초, ms)입니다. (Type 3 연속 스크롤 시에는 파일 변경 확인 간격 등으로 사용될 수 있습니다.)
